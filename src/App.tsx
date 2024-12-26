@@ -50,7 +50,11 @@ const GenerateWords = ({ words }: { words: string }) => {
 };
 
 const CountdownTimer = ({ timeLeft }: { timeLeft: number }) => {
-  return <div className="text-4xl text-center text-slate-500">{timeLeft}</div>;
+  return (
+    <div className="text-4xl text-center text-slate-500">
+      {timeLeft}
+    </div>
+  );
 };
 
 export default App;

@@ -2,64 +2,41 @@ import { motion } from "framer-motion";
 import { formatPercentage } from "../Utils/Helper";
 import { State } from "../Hooks/useEngine";
 
-const Results = ({
-  state,
-  errors,
-  accuracyPercentage,
-  total,
-  className,
-}: {
+interface ResultsProps {
   state: State;
   errors: number;
   accuracyPercentage: number;
   total: number;
   className?: string;
-}) => {
-  const initial = { opacity: 0 }; // Fixed case for opacity
-  const animate = { opacity: 1 }; // Fixed case for opacity
-  const duration = { duration: 0.3 }; // Fixed duration property
+}
 
+const Results: React.FC<ResultsProps> = ({ state, errors, accuracyPercentage, total, className }) => {
   if (state !== "finish") {
-    return null; // Only render when state is 'finish'
+    return null;
   }
+
+  const resultsData = [
+    { label: "Results", value: "", delay: 0, className: "text-xl font-semibold text-center text-green-500" },
+    { label: "Accuracy", value: `${formatPercentage(accuracyPercentage)}`, delay: 0.5, className:"text-green-500" },
+    { label: "Errors", value: `${errors}`, delay: 1, className: "text-red-500" },
+    { label: "Typed", value: `${total}`, delay: 1.4, className: "text-blue-500" },
+  ];
 
   return (
     <motion.ul
-      className={`flex flex-col items-center text-primary-400 space-y-3 ${className}`}
+      className={`flex flex-col items-center text-primary-400 space-y-3 ${className || ""}`}
     >
-      <motion.li
-        initial={initial}
-        animate={animate}
-        className="text-xl font-semibold text-center"
-        transition={{ ...duration, delay: 0 }}
-      >
-        Results
-      </motion.li>
-
-      <motion.li
-        initial={initial}
-        animate={animate}
-        transition={{ ...duration, delay: 0.5 }}
-      >
-        Accuracy: {formatPercentage(accuracyPercentage)}
-      </motion.li>
-
-      <motion.li
-        initial={initial}
-        animate={animate}
-        transition={{ ...duration, delay: 1 }}
-        className="text-red-500"
-      >
-        Errors: {errors}
-      </motion.li>
-
-      <motion.li
-        initial={initial}
-        animate={animate}
-        transition={{ ...duration, delay: 1.4 }}
-      >
-        Typed: {total}
-      </motion.li>
+      {resultsData.map(({ label, value, delay, className = "" }, index) => (
+        <motion.li
+          key={index}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay }}
+          className={className}
+        >
+          {label}: {value}
+        </motion.li>
+      ))}
     </motion.ul>
   );
 };

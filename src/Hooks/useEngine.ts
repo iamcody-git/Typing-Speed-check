@@ -9,13 +9,11 @@ const NUMBER_OF_WORDS = 30;
 const COUNTDOWN_SECONDS = 30;
 
 // Function to count errors between typed text and expected text
-const countErrors = (typed: string, wordsReached: boolean) => {
-  if (!wordsReached) return 0; 
+const countErrors = (typed: string, expected: string) => {
   let errors = 0;
-  const typedArray = typed.split("");
-  for (let i = 0; i < typedArray.length; i++) {
-    if (typedArray[i] !== typedArray[i]) {
-      errors++; 
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i] !== expected[i]) {
+      errors++;
     }
   }
   return errors;
@@ -26,44 +24,52 @@ const useEngine = () => {
   const { words, updateWords } = useWords(NUMBER_OF_WORDS);
   const { timeLeft, startCountDown, resetCountdown } = useCountDownTimer(COUNTDOWN_SECONDS);
   const { typed, cursor, clearTyped, resetTotalTyped, totalTyped } = useTyping(state !== "finish");
-
   const [errors, setErrors] = useState(0);
 
   const isStarting = state === "start" && cursor > 0;
   const areWordsFinished = cursor === words.length;
 
+  // Summing up errors when a word set is completed
   const sumErrors = useCallback(() => {
-    const wordsReached = cursor === words.length;
-    setErrors((prevErrors) => prevErrors + countErrors(typed, wordsReached));  
-  }, [typed, words, cursor]);
+    setErrors((prevErrors) => prevErrors + countErrors(typed, words));
+  }, [typed, words]);
 
+  // Transition from "start" to "run" state
   useEffect(() => {
     if (isStarting) {
       setState("run");
       startCountDown();
     }
-  }, [isStarting, startCountDown, cursor]);
+  }, [isStarting, startCountDown]);
 
+  // Handle word completion
   useEffect(() => {
     if (areWordsFinished) {
       sumErrors();
       updateWords();
       clearTyped();
     }
-  }, [cursor, words, clearTyped, typed, areWordsFinished, updateWords, sumErrors]);
+  }, [areWordsFinished, sumErrors, updateWords, clearTyped]);
 
+  // Handle timer expiration
+  useEffect(() => {
+    if (timeLeft === 0 && state === "run") {
+      setState("finish");
+    }
+  }, [timeLeft, state]);
+
+  // Restart logic
   const restart = useCallback(() => {
     resetCountdown();
     resetTotalTyped();
-    resetCountdown();
     setState("start");
     setErrors(0);
     updateWords();
     clearTyped();
-  }, [clearTyped, updateWords, resetCountdown, resetTotalTyped]);
+  }, [resetCountdown, resetTotalTyped, updateWords, clearTyped]);
 
-  // Return everything, including restart
   return { state, words, timeLeft, typed, errors, totalTyped, restart };
 };
+
 
 export default useEngine;
